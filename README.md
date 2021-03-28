@@ -1,4 +1,4 @@
-# Tellow Waypoint
+# Tello Waypoint
 **A desktop app that let users manually control and create flightplans for Tello drone with intuitive control UI and live positioning tracking in 3D view.** <br />
 Built with: 
 - C# .NET framework
