@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using System.Drawing;
-using System.Threading;
 using TelloLib;
 
-namespace Swarmming
+namespace FlightPlan_gui
 {
     public partial class FlightPlan_gui : Form
     {
         string IP = "192.168.10.1";
+        string currentInstruction;
         int counter = 0;
         int instructionLength = 0;
         List<string> instructionList = new List<string>();
@@ -36,7 +35,7 @@ namespace Swarmming
             {
                 if (newState != Tello.ConnectionState.Connected)
                 {
-                    Console.WriteLine("Tello Disconnected");
+                    //Console.WriteLine("Tello Disconnected");
                 }
                 if (newState == Tello.ConnectionState.Connected)
                 {
@@ -50,7 +49,7 @@ namespace Swarmming
             {
                 if (cmdId == 86)//ac update
                 {
-                    Console.WriteLine("Tello updated");
+                    //Console.WriteLine("Tello updated");
                 }
             };
 
@@ -58,7 +57,7 @@ namespace Swarmming
             while (Tello.connected)
             {
                 // send back connecting message
-                Console.WriteLine("Tello connected");
+                //Console.WriteLine("Tello connected");
             }
         }
 
@@ -74,7 +73,8 @@ namespace Swarmming
                 insList.Text = "Instruction cannot be blank";
                 insList.Visible = true;
             }
-            else {
+            else
+            {
                 instructionList.Add(input.Text);
                 insList.Text = displayIntructions(instructionList);
                 input.Text = "";
@@ -92,7 +92,8 @@ namespace Swarmming
                 insList.Text = "No instruction yet";
                 Run.Enabled = false;
             }
-            else {
+            else
+            {
                 insList.Text = "No instruction to delete";
             }
             runningText.Visible = false;
@@ -129,24 +130,20 @@ namespace Swarmming
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            // reset timer after 1st tick
+            if (timer1.Interval != 15000)
+                timer1.Interval = 15000;
+
+            // iterate through list of instruction
             if (counter < instructionLength)
             {
-                string currentInstruction = instructionList[counter].ToString();
+                currentInstruction = instructionList[counter].ToString();
                 currentStage.Text = "Current Stage: " + currentInstruction;
-                if (currentInstruction == "takeoff") {
-                    SendKeys.Send("{J}");
-                }
-                if (currentInstruction == "land")
-                {
-                    SendKeys.Send("{L}");
-                }
-                if (currentInstruction == "cw 90")
-                {
-                    SendKeys.Send("{O}");
-                }
+                SendKeys.Send(" ");
                 counter += 1;
             }
-            else {
+            else
+            {
                 timer1.Stop();
                 counter = 0;
                 Run.Enabled = true;
@@ -156,18 +153,18 @@ namespace Swarmming
 
         private void stage_Changed(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.J)
-            {
-                Tello.takeOff();
-            }
-            if (e.KeyCode == Keys.L)
-            {
-                Tello.land();
-            }
-            if (e.KeyCode == Keys.O)
-            {
-                Tello.sendInstruction("cw 90");
-            }
+            if (e.KeyCode == Keys.Space)
+                sendInstruction(currentInstruction);
+        }
+
+        void sendInstruction(string instruction)
+        {
+            Tello.sendInstruction(instruction);
+        }
+
+        private void emergency_Click_1(object sender, EventArgs e)
+        {
+            Tello.land();
         }
     }
 }
